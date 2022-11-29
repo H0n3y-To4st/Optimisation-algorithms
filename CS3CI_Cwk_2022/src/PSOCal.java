@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ public class PSOCal {
 	// update personal best
 	// end
 
+	public static final double MAX_VELOCITY = 4.0;
 	Particle[] particles; // collection of particles -> swarm
 
 	int dimensions = DemandPrediction.N_PARAMETERS; // includes bias and indicators
@@ -26,76 +28,94 @@ public class PSOCal {
 	double social; // how gbest affects particle movement
 
 	double[] gBest = new double[dimensions];
+	double gBestFitness = Double.MAX_VALUE;
 
-	double gBias = Math.random() * 101; // 0-100
+	double gBias = 100; // 0-100
 
-	public PSOCal(int dime, int pnum, int iterations, double c, double s, double i) {
+	double knownDemand;
+	double[] indicators;
+	
+	public static void main(String[] args) {
+		
+//		PSOCal C  = new PSOCal(13, 20, 2000, 1.1, 0.9, 0.7);
+//		C.initialise();
+//		C.theHorde(100);
+		
+	
+	}
+
+	public PSOCal(int dime, int pnum, int iterations, double knownDemand, double[] indicators, double c, double s, double i) {
 		dimensions = dime;
 		particlesNum = pnum;
 		maxIter = iterations;
 		cognitive = c;
 		social = s;
 		inertia = i;
+		this.knownDemand = knownDemand;
+		this.indicators = indicators;
 	}
 
-	public void initialise() throws IOException {
+	public void initialise(){
 
 		// generate particles
-		initPopulation(particles);
-
-		// read file
-		CSVReader();
-
-		// generate weights
-		getWeights();
-
-		// fitness value
-		evaluateFitness();
+		initPopulation();
 
 	}
 
-	// makes 13 weights
-	public double[] getWeights() {
-		double[] weights = new double[DemandPrediction.N_DEMAND_INDICATORS];
+	public double[] releaseTheSwarm() {
+		int iterations = maxIter;
+		while (iterations > 0) {
 
-		for (int i = 0; i < DemandPrediction.N_DEMAND_INDICATORS; i++) {
-			weights[i] = Math.random(); // randomly between 0 and 1
+			// fitness value
+			calculateFitnessForCurrentIteration();
+			
+			double r1 = Math.random();
+			double r2 = Math.random();
+			
+			for(int i = 0; i < particles.length; i++) {
+				
+				updateVelocity(particles[i], r1, r2);
+				updatePos(particles[i]);
+			}
+			iterations--;
 		}
-
-		return weights;
-	}
-
-	public String[] CSVReader() throws IOException {
-		String f = "data/test.csv";
-		FileReader fr = new FileReader(f);
-		BufferedReader br = new BufferedReader(fr);
-		String l;
-		String[] values = null;
-
-		while ((l = br.readLine()) != null) {
-			values = l.split(",");
-//			demand[0] = Double.parseDouble(values[0]); //known demand of each day
-		}
-
-		return values;
+		System.out.println("Training: " + knownDemand + ", " + gBestFitness);
+		return gBest;
 	}
 
 	// fitness function = demand prediction equation, evaluate on one linerow
 	// demand prediction = gBias (+ bias*indicator...)
-	public double evaluateFitness() throws IOException {
-		double fitness = gBias;
-		String[] values = CSVReader();
-		double[] bias = getWeights();
-//		double[] indicator;
+	private double evaluateFitness(double[] pos, double[] indicators) {
+		double fitness = pos[0];
 
-		for (int i = 0; i < values.length; i++) {
-			fitness += (bias[i] * Double.parseDouble(values[i + 1]));
+		for (int i = 1; i < pos.length; i++) {
+			fitness += (pos[i] * indicators[i - 1]);
 		}
 		return fitness;
 	}
 
+	private void calculateFitnessForCurrentIteration() {
+		for (int i = 0; i < particles.length; i++) {
+			double fitness = evaluateFitness(particles[i].pos, indicators);
+			double pBest = Math.abs(particles[i].fitness - knownDemand);
+			double currentFitness = Math.abs(fitness - knownDemand);
+			double gBestFitnessAbsolute = Math.abs(gBestFitness - knownDemand);
+					
+			if (pBest < currentFitness) {
+				particles[i].pbest = particles[i].pos;
+				particles[i].fitness = fitness;
+			}
+			if (currentFitness < gBestFitnessAbsolute) {
+				gBestFitness = fitness;
+				gBest = particles[i].pos;
+			}
+		}
+	}
+
 	// initialise phase + search space
-	void initPopulation(Particle[] p) {
+	void initPopulation() {
+		particles = new Particle[particlesNum];
+		
 		double[] innerBounds = new double[21];
 
 		for (int idx = 0; idx < innerBounds.length; idx++) {
@@ -104,20 +124,25 @@ public class PSOCal {
 			}
 		}
 
-		for (int i = 0; i < p.length; i++) {
-			double[] pos;
-			double[] vel;
-
-			for (int dime = 0; dime < dimensions; dime++) {
-
-				pos[dime] = ((Math.random() * ((100.0 - (-100.0)))) - 100.0); // random point in space
-				vel[dime] = ((Math.random() * ((100.0 - (-100.0)))) - 100.0) - (pos[dime]) / 2; // random point -
-																								// current position / 2
-
+		for (int i = 0; i < particlesNum; i++) {
+			
+			double[] pos = new double[dimensions];
+			double[] vel = new double[dimensions];
+			
+			// Reworked to allow gbias to have a range of -n to n
+			// With other values having a range of -n <= x < n
+			double initialBounds = 5.12; // Value derived from Rastign function -- TODO : Review suitability
+			pos[0] = Math.random() * (gBias+1) - gBias; // gBias+1 to allow for gBias value itself (as random does not allow 1.0
+			for(int dime = 1; dime < dimensions; dime++) {
+				
+				// TODO : Check the maths - (a*(b*2))-b should give a range of -b to b
+				double x = (Math.random() * (initialBounds*2)) - initialBounds;
+				pos[dime] = x;
+				
 			}
 
 			// Particle(double p, double v, double pb)
-			p[i] = new Particle(pos[i], vel[i]);
+			particles[i] = new Particle(pos, vel);
 		}
 	}
 
@@ -135,103 +160,27 @@ public class PSOCal {
 
 	// update particles velocity
 	// call this BEFORE updatePos
-	// is best neighbour needed?
-	public void updateVelocity(Particle p, double[] r1, double[] r2) {
-
-		// p
-
-		double[] velocities = new double[dimensions];
-		double[] pBest = new double[dimensions];
-		double[] positions = new double[dimensions];
-		// best neighbour?
+	public void updateVelocity(Particle p, double r1, double r2) {
 
 		double[] in = new double[dimensions];
 		double[] cog = new double[dimensions];
 		double[] soc = new double[dimensions];
 
-		// inertia values
 		for (int i = 0; i < dimensions; i++) {
-			for (int j = 0; j < dimensions; j++) {
-				in[i] = inertia * velocities[i];
-			}
-		}
 
-		// ----cognitive values - break into 3 steps
-		// a = difference between positions
-		double[] a = new double[dimensions];
-		double[] cxr = new double[dimensions];
+			// ----cognitive value
+			cog[i] = cognitive * r1 * (p.pbest[i] - p.pos[i]);
 
-		for (int i = 0; i < dimensions; i++) {
-			// pbest - current position
+			// ----social value
+			soc[i] = social * r2 * (gBest[i] - p.pos[i]);
 
-			a[i] = (pBest[i] - positions[i]);
+			// ----Inertia value 
+			in[i] = inertia * p.vel[i];
 
-		}
-
-		for (int i = 0; i < dimensions; i++) {
-			// cog * r1
-			cxr[i] = cognitive * r1[i];
-		}
-
-		for (int i = 0; i < dimensions; i++) {
-			// cog * r1
-			cog[i] = cxr[i] * a[i];
-		}
-
-		// ----social values - 3 steps
-		double[] b = new double[dimensions];
-		double[] sxr = new double[dimensions];
-
-		for (int i = 0; i < dimensions; i++) {
-			// gbest - pbest
-			b[i] = gBest[i] - positions[i];
-		}
-
-		for (int i = 0; i < dimensions; i++) {
-			sxr[i] = social * r2[i];
-		}
-
-		for (int i = 0; i < dimensions; i++) {
-			soc[i] = sxr[i] * b[i];
-		}
-
-		// ----update using calculated values
-		for (int i = 0; i < dimensions; i++) {
-			p.vel = in[i] + cog[i] + soc[i]; // TODO
+			// ----update using calculated values
+			double velocity = in[i] + cog[i] + soc[i]; // new velocity in current dimension
+			
+			p.vel[i] = velocity;
 		}
 	}
-
-	// problem statement
-	// best weight training - use on test file
-	// initialisation - -100,100 search space
-	// a0 = global bias (gb), initialise function, a0 any number between 0-100,
-	// parameter
-	// a1 = indicator 1.... initialise all indicators with random values at once(?)
-	// fitness function = demand prediction equation, evaluate on one linerow
-	// find best weight for current line which will be closest to actual demand
-	// repeat for all rows
-	// once pso is done, iterate and compare weights of all processed lines
-	// overall weights - work out later
-	// somehow get best weight
-	// test will use best weights for overall result
-	// 3 parameter - PSO parameters (cog, social, ine)
-	// trial and error with parameter values
-
-	/*
-	 * TODO list: -particle object: 1.single array with customisable length- number
-	 * of alphas 2.velocity 3.position - current 4.pbest -swarm - repeat swarm for
-	 * every row - should be done partly in PSOImp 1.gbest 2.update velocity
-	 * 3.update pos 4.fitness function 5.number of iterations - 1000 6.csv reader
-	 * -overall PSO overall weights generate data from test file - predicted demand
-	 * per row from test file using overall weights one initialisation function one
-	 * fitness function
-	 */
-
-	/*
-	 * ---progress list: did fitness function somewhat started initialisation
-	 * function changed particle to single array edited this class due to single
-	 * array change made gbias made weights method made csv reader working on fixing
-	 * update velocity and position methods
-	 */
-
 }

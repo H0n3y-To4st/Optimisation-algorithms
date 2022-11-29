@@ -4,6 +4,7 @@ public class Particle {
 	public double[] pos; //position
 	public double[] vel; //velocity
 	public double[] pbest; //personal best
+	public double fitness = Double.MAX_VALUE;
 	
 	public Particle(double[] p, double[] v) {
 		pos = p;
