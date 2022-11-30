@@ -16,8 +16,8 @@ public class DemandPrediction {
      *                "validation" or "test".
      */
     public DemandPrediction(String dataset) throws IOException {
-        if(Objects.equals(dataset, "train")) load_dataset("data/train.csv");
-        else if(Objects.equals(dataset, "test")) load_dataset("data/test.csv");
+        if(Objects.equals(dataset, "train")) load_dataset("C:\\Users\\ismah\\OneDrive\\Documents\\Ismah's world\\Github\\CS3CI_Cwk_2022\\CS3CI_Cwk_2022\\data\\train.csv");
+        else if(Objects.equals(dataset, "test")) load_dataset("C:\\Users\\ismah\\OneDrive\\Documents\\Ismah's world\\Github\\CS3CI_Cwk_2022\\CS3CI_Cwk_2022\\data\\test.csv");
         else throw new IllegalArgumentException("Only permitted arguments for " +
                     "CarPricePrediction::CarPricePrediction are train and test.");
     }

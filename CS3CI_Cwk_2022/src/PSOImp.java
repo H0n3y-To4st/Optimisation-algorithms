@@ -10,14 +10,14 @@ public class PSOImp {
 	Particle[] particles;
 
 	int dimensions = DemandPrediction.N_DEMAND_INDICATORS; // TODO
-	int particlesNum = DemandPrediction.N_DEMAND_INDICATORS * 2; // double the num of dimensions, more particle then
-																	// more accurate
+	int particlesNum = DemandPrediction.N_DEMAND_INDICATORS * 10; // double the num of dimensions, rule of thumb: more particle then
+																	// more accurate, 10~ times more than problem space 
 	int iterations = 1000;
 
-	// constants - with placeholder values
-	double cognitive = 1.1193; // how pbest affects particle movement
-	double inertia = 0.725; // control impact of velocity
-	double social = 1.1193; // how gbest affects particle movement
+	// constants
+	double cognitive = 0.7;//1.1193; // how pbest affects particle movement, must be less than social for better results
+	double inertia = 0.725; // control impact of velocity, best range 0.1-0.8
+	double social = 0.8;//1.1193; // how gbest affects particle movement
 
 	public static void main(String[] args) {
 		PSOImp imp = new PSOImp();
@@ -36,6 +36,7 @@ public class PSOImp {
 		double[][] totalGBest = new double[lines.length][dimensions];
 		double[] averageTotalGBest = new double[dimensions];
 
+		//for training
 		for (int i = 0; i < lines.length; i++) {
 			var l = lines[i];
 			double knownDemand = getKnownDemand(l);
@@ -58,14 +59,17 @@ public class PSOImp {
 			averageTotalGBest[i] = average;
 		}
 
+		//for testing
 		for (int i = 0; i < lines2.length; i++) {
 			var l = lines2[i];
 			double knownDemand = getKnownDemand(l);
 			double[] indicators = getIndicators(l);
 			double estimate = getEstimate(averageTotalGBest, indicators);
-			System.out.println(knownDemand + "\t" + estimate);
+			System.out.println("Testing: " + knownDemand + ", " + estimate);
 		}
 	}
+	
+	//TODO: error = estimate - demand, average the error by dividing it by number of "days"
 
 	public double getEstimate(double[] average, double[] indicators) {
 		double estimate = average[0];

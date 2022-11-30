@@ -19,7 +19,6 @@ public class PSOCal {
 
 	int dimensions = DemandPrediction.N_PARAMETERS; // includes bias and indicators
 	int particlesNum;
-
 	int maxIter;
 
 	// constants - with placeholder values, find online source to find better values
@@ -34,15 +33,6 @@ public class PSOCal {
 
 	double knownDemand;
 	double[] indicators;
-	
-	public static void main(String[] args) {
-		
-//		PSOCal C  = new PSOCal(13, 20, 2000, 1.1, 0.9, 0.7);
-//		C.initialise();
-//		C.theHorde(100);
-		
-	
-	}
 
 	public PSOCal(int dime, int pnum, int iterations, double knownDemand, double[] indicators, double c, double s, double i) {
 		dimensions = dime;
@@ -131,7 +121,7 @@ public class PSOCal {
 			
 			// Reworked to allow gbias to have a range of -n to n
 			// With other values having a range of -n <= x < n
-			double initialBounds = 5.12; // Value derived from Rastign function -- TODO : Review suitability
+			double initialBounds = 5.12; // 5.12 Value derived from Rastign function -- TODO : Review suitability
 			pos[0] = Math.random() * (gBias+1) - gBias; // gBias+1 to allow for gBias value itself (as random does not allow 1.0
 			for(int dime = 1; dime < dimensions; dime++) {
 				
