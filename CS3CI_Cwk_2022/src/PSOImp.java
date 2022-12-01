@@ -9,15 +9,17 @@ public class PSOImp {
 	DemandPrediction dp; // non static
 	Particle[] particles;
 
-	int dimensions = DemandPrediction.N_DEMAND_INDICATORS; // TODO
-	int particlesNum = DemandPrediction.N_DEMAND_INDICATORS * 10; // double the num of dimensions, rule of thumb: more particle then
-																	// more accurate, 10~ times more than problem space 
+	int dimensions = DemandPrediction.N_DEMAND_INDICATORS;
+	int particlesNum = DemandPrediction.N_DEMAND_INDICATORS * 10; // double the num of dimensions, rule of thumb: more
+																	// particle then
+																	// more accurate, 10~ times more than problem space
 	int iterations = 1000;
 
 	// constants
-	double cognitive = 0.7;//1.1193; // how pbest affects particle movement, must be less than social for better results
+	double cognitive = 0.7;// 1.1193; // how pbest affects particle movement, must be less than social for
+							// better results
 	double inertia = 0.725; // control impact of velocity, best range 0.1-0.8
-	double social = 0.8;//1.1193; // how gbest affects particle movement
+	double social = 0.8;// 1.1193; // how gbest affects particle movement
 
 	public static void main(String[] args) {
 		PSOImp imp = new PSOImp();
@@ -36,7 +38,10 @@ public class PSOImp {
 		double[][] totalGBest = new double[lines.length][dimensions];
 		double[] averageTotalGBest = new double[dimensions];
 
-		//for training
+		double avgTrainingError = 0;
+		double avgTestingError = 0;
+
+		// for training
 		for (int i = 0; i < lines.length; i++) {
 			var l = lines[i];
 			double knownDemand = getKnownDemand(l);
@@ -45,10 +50,16 @@ public class PSOImp {
 			PSOCal PC = new PSOCal(dimensions, particlesNum, iterations, knownDemand, indicators, social, cognitive,
 					inertia);
 			PC.initialise();
-			double[] gBestForCurrentLine = PC.releaseTheSwarm();
+			double[] gBestForCurrentLine = PC.releaseTheSwarm(); // no longer prints values from training
+
 			totalGBest[i] = gBestForCurrentLine;
 
+			double estimate = getEstimate(averageTotalGBest, indicators);
+
+			avgTrainingError += Math.abs(estimate - knownDemand);
 		}
+
+		avgTrainingError /= lines.length;
 
 		for (int i = 0; i < dimensions; i++) {
 			double total = 0;
@@ -59,17 +70,20 @@ public class PSOImp {
 			averageTotalGBest[i] = average;
 		}
 
-		//for testing
+		// for testing
 		for (int i = 0; i < lines2.length; i++) {
 			var l = lines2[i];
 			double knownDemand = getKnownDemand(l);
 			double[] indicators = getIndicators(l);
 			double estimate = getEstimate(averageTotalGBest, indicators);
-			System.out.println("Testing: " + knownDemand + ", " + estimate);
+//			System.out.println("Testing: " + knownDemand + ", " + estimate);
+			avgTestingError += Math.abs(estimate - knownDemand);
 		}
+		avgTestingError /= lines2.length;
+
+		System.out.println("The average training error calculated: " + avgTrainingError);
+		System.out.println("The average testing error calculated: " + avgTestingError);
 	}
-	
-	//TODO: error = estimate - demand, average the error by dividing it by number of "days"
 
 	public double getEstimate(double[] average, double[] indicators) {
 		double estimate = average[0];
