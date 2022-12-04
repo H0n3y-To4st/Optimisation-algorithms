@@ -32,54 +32,54 @@ public class PSOImp {
 	}
 
 	public void run() {
-		String[] lines = getLinesFromTrainCSV();
-		String[] lines2 = getLinesFromTestCSV();
+		String[] trainingData = getLinesFromTrainCSV();
+		String[] testingData = getLinesFromTestCSV();
 
-		double[][] totalGBest = new double[lines.length][dimensions];
+		double[][] totalGBest = new double[trainingData.length][dimensions]; //14 values
 		double[] averageTotalGBest = new double[dimensions];
 
 		double avgTrainingError = 0;
 		double avgTestingError = 0;
 
 		// for training
-		for (int i = 0; i < lines.length; i++) {
-			var l = lines[i];
+		for (int i = 0; i < trainingData.length; i++) {
+			var l = trainingData[i];
 			double knownDemand = getKnownDemand(l);
 			double[] indicators = getIndicators(l);
 
 			PSOCal PC = new PSOCal(dimensions, particlesNum, iterations, knownDemand, indicators, social, cognitive,
 					inertia);
 			PC.initialise();
-			double[] gBestForCurrentLine = PC.releaseTheSwarm(); // no longer prints values from training
+			double[] gBestForCurrentLine = PC.releaseTheSwarm();
 
 			totalGBest[i] = gBestForCurrentLine;
 
-			double estimate = getEstimate(averageTotalGBest, indicators);
+			double estimate = getEstimate(gBestForCurrentLine, indicators);
 
-			avgTrainingError += Math.abs(estimate - knownDemand);
+			avgTrainingError += Math.abs(estimate - knownDemand); //sort out estimate
 		}
 
-		avgTrainingError /= lines.length;
+		avgTrainingError /= trainingData.length;
 
 		for (int i = 0; i < dimensions; i++) {
 			double total = 0;
-			for (int j = 0; j < lines.length; j++) {
+			for (int j = 0; j < trainingData.length; j++) {
 				total += totalGBest[j][i];
 			}
-			double average = total / lines.length;
+			double average = total / trainingData.length;
 			averageTotalGBest[i] = average;
 		}
 
 		// for testing
-		for (int i = 0; i < lines2.length; i++) {
-			var l = lines2[i];
+		for (int i = 0; i < testingData.length; i++) {
+			var l = testingData[i];
 			double knownDemand = getKnownDemand(l);
 			double[] indicators = getIndicators(l);
 			double estimate = getEstimate(averageTotalGBest, indicators);
 //			System.out.println("Testing: " + knownDemand + ", " + estimate);
 			avgTestingError += Math.abs(estimate - knownDemand);
 		}
-		avgTestingError /= lines2.length;
+		avgTestingError /= testingData.length;
 
 		System.out.println("The average training error calculated: " + avgTrainingError);
 		System.out.println("The average testing error calculated: " + avgTestingError);

@@ -69,7 +69,7 @@ public class PSOCal {
 			}
 			iterations--;
 		}
-//		System.out.println("Training: " + knownDemand + ", " + gBestFitness);
+		System.out.println("Training: " + knownDemand + ", " + gBestFitness);
 		return gBest;
 	}
 
