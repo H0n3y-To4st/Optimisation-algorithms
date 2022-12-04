@@ -41,7 +41,7 @@ public class ArtificialBeeColony {
 		// TODO
 		int iterations = 1000;
 		
-		ArtificialBeeColony hive = new ArtificialBeeColony(13, 13, limits);
+		ArtificialBeeColony hive = new ArtificialBeeColony(100, 13, limits);
 
 		String[] lines = getLinesFromTrainCSV();
 		String[] lines2 = getLinesFromTestCSV();
@@ -57,6 +57,8 @@ public class ArtificialBeeColony {
 			double[] weightsForCurrentDataset = hive.findSolution(iterations, knownDemand, indicators);
 			double estimate = generateEstimate(weightsForCurrentDataset, indicators);
 			avgTrainingError += Math.abs(estimate - knownDemand);
+			
+			System.out.println("Training: " + knownDemand + ", " + estimate);
 		}
 		
 		avgTrainingError /= lines.length;
@@ -69,6 +71,8 @@ public class ArtificialBeeColony {
 			double[] weightsForCurrentDataset = hive.findSolution(iterations, knownDemand, indicators);
 			double estimate = generateEstimate(weightsForCurrentDataset, indicators);
 			avgTestingError += Math.abs(estimate - knownDemand);
+			
+			System.out.println("Testing: " + knownDemand + ", " + estimate);
 		}
 		
 		avgTestingError /= lines2.length;
@@ -186,7 +190,7 @@ public class ArtificialBeeColony {
 				if (fitness > bestFitness) {
 					bestFitness = fitness;
 					bestEstimate = estimate;
-					bestSoFar = foodSources[i];
+					bestSoFar = foodSources[i].clone();
 				}
 			}
 
@@ -194,8 +198,9 @@ public class ArtificialBeeColony {
 
 		} while (count < iterations);
 
-		System.out.println("Best Fitness: " + bestFitness + " | " + "Best Estimate: " + bestEstimate + " | " + "Best so far: " + Arrays.toString(bestSoFar));
+		//System.out.println("Best Fitness: " + bestFitness + " | " + "Best Estimate: " + bestEstimate + " | " + "Best so far: " + Arrays.toString(bestSoFar));
 
+//		System.out.println("Results: " + knownActual + "," + bestEstimate);
 		return bestSoFar;
 	}
 

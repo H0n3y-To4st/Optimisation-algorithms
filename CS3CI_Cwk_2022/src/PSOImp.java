@@ -76,7 +76,7 @@ public class PSOImp {
 			double knownDemand = getKnownDemand(l);
 			double[] indicators = getIndicators(l);
 			double estimate = getEstimate(averageTotalGBest, indicators);
-//			System.out.println("Testing: " + knownDemand + ", " + estimate);
+			System.out.println("Testing: " + knownDemand + ", " + estimate);
 			avgTestingError += Math.abs(estimate - knownDemand);
 		}
 		avgTestingError /= testingData.length;

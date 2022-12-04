@@ -97,7 +97,7 @@ public class PSOCal {
 			}
 			if (currentFitness < gBestFitnessAbsolute) {
 				gBestFitness = fitness;
-				gBest = particles[i].pos;
+				gBest = particles[i].pos.clone();
 			}
 		}
 	}
