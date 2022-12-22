@@ -9,15 +9,6 @@ import java.util.Spliterator.OfPrimitive;
 
 public class ArtificialBeeColony {
 
-	// http://www.scholarpedia.org/article/Artificial_bee_colony_algorithm#Eq-1
-	// https://en.wikipedia.org/wiki/Artificial_bee_colony_algorithm
-	// https://towardsdatascience.com/implementing-artificial-bee-colony-algorithm-to-solve-business-problems-cb754f3b9255
-	// https://www.sciencedirect.com/topics/computer-science/artificial-bee-colony-algorithm
-	// https://analyticsindiamag.com/artificial-bee-colony-and-its-applications-to-optimization-problems/
-	// https://abc.erciyes.edu.tr
-	// https://abc.erciyes.edu.tr/pub/Step%20by%20Step%20Procedure%20of%20ABC.pdf
-	
-
 	/*
 	 * Problem - Minmise = Actual - Estimate Where Estimate = a0 + a1 * I1 + a2 * I2
 	 * ... a13 * I13
@@ -38,10 +29,9 @@ public class ArtificialBeeColony {
 				{ rangeLowForAlpha, rangeHighForAlpha }, { rangeLowForAlpha, rangeHighForAlpha },
 				{ rangeLowForAlpha, rangeHighForAlpha }, { rangeLowForAlpha, rangeHighForAlpha } };
 
-		// TODO
 		int iterations = 1000;
 		
-		ArtificialBeeColony hive = new ArtificialBeeColony(100, 13, limits);
+		ArtificialBeeColony hive = new ArtificialBeeColony(100, 13, limits); //original colony size is 100
 
 		String[] lines = getLinesFromTrainCSV();
 		String[] lines2 = getLinesFromTestCSV();
@@ -287,7 +277,7 @@ public class ArtificialBeeColony {
 	}
 
 	private static String[] getLinesFromTestCSV() {
-		String f = "C:\\Users\\ismah\\OneDrive\\Documents\\Ismah's world\\Github\\CS3CI_Cwk_2022\\CS3CI_Cwk_2022\\data\\test.csv";
+		String f = "CS3CI_Cwk_2022\\data\\test.csv";
 		String[] values = null;
 
 		try {
@@ -302,7 +292,7 @@ public class ArtificialBeeColony {
 	}
 
 	private static String[] getLinesFromTrainCSV() {
-		String f = "C:\\Users\\ismah\\OneDrive\\Documents\\Ismah's world\\Github\\CS3CI_Cwk_2022\\CS3CI_Cwk_2022\\data\\train.csv";
+		String f = "CS3CI_Cwk_2022\\data\\train.csv";
 		String[] values = null;
 
 		try {

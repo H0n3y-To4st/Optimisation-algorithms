@@ -10,7 +10,7 @@ public class PSOImp {
 	Particle[] particles;
 
 	int dimensions = DemandPrediction.N_DEMAND_INDICATORS;
-	int particlesNum = DemandPrediction.N_DEMAND_INDICATORS * 10; // double the num of dimensions, rule of thumb: more
+	int particlesNum = 100;//DemandPrediction.N_DEMAND_INDICATORS * 10; // double the num of dimensions, rule of thumb: more
 																	// particle then
 																	// more accurate, 10~ times more than problem space
 	int iterations = 1000;
@@ -19,7 +19,7 @@ public class PSOImp {
 	double cognitive = 0.7;// 1.1193; // how pbest affects particle movement, must be less than social for
 							// better results
 	double inertia = 0.725; // control impact of velocity, best range 0.1-0.8
-	double social = 0.8;// 1.1193; // how gbest affects particle movement
+	double social = 0.1;// 1.1193; // how gbest affects particle movement
 
 	public static void main(String[] args) {
 		PSOImp imp = new PSOImp();
@@ -112,7 +112,7 @@ public class PSOImp {
 	}
 
 	private String[] getLinesFromTestCSV() {
-		String f = "C:\\Users\\ismah\\OneDrive\\Documents\\Ismah's world\\Github\\CS3CI_Cwk_2022\\CS3CI_Cwk_2022\\data\\test.csv";
+		String f = "CS3CI_Cwk_2022\\data\\test.csv";
 		String[] values = null;
 
 		try {
@@ -128,7 +128,7 @@ public class PSOImp {
 
 	private String[] getLinesFromTrainCSV() {
 
-		String f = "C:\\Users\\ismah\\OneDrive\\Documents\\Ismah's world\\Github\\CS3CI_Cwk_2022\\CS3CI_Cwk_2022\\data\\train.csv";
+		String f = "CS3CI_Cwk_2022\\data\\train.csv";
 		String[] values = null;
 
 		try {
