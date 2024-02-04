@@ -1,4 +1,4 @@
 # CS3CI_Cwk_2022
-# a comparison of artificial bee colony (ABC) and particle swarm optimisation (PSO)
-# in terms of how efficiently they can find the optimal route at the given problem
-# the problem of which is based on the "travelling saleman"
+This project is a comparison of both the artificial bee colony (ABC) and particle swarm optimisation (PSO) algorithms.
+To test their efficiency they are applied to find the most optimal route in a search space.
+The given problem is based on the "travelling saleman".
